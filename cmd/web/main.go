@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+type application struct{
+	errorLog *log.Logger
+	infoLog *log.Logger
+}
+
 func main() {
 	//flag name+default value+ help snippet
 	addr := flag.String("addr", ":4000", "HTTP Network address")
@@ -16,10 +21,15 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	app := &application{
+		errorLog: errorLog,
+		infoLog: infoLog,
+	}
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet", app.showSnippet)
+	mux.HandleFunc("/snippet/create", app.createSnippet)
 
 	//For serveing static files
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
@@ -40,3 +50,11 @@ func main() {
 }
 
 // curl https://www.alexedwards.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/
+
+//FOR LOGGING TO FILES
+// f, err := os.OpenFile("/tmp/info.log", os.O_RDWR|os.O_CREATE, 0666) 
+// if err != nil {
+// log.Fatal(err)
+// }
+// defer f.Close()
+// infoLog := log.New(f, "INFO\t", log.Ldate|log.Ltime)
