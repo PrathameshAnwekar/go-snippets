@@ -25,22 +25,13 @@ func main() {
 		errorLog: errorLog,
 		infoLog: infoLog,
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet", app.showSnippet)
-	mux.HandleFunc("/snippet/create", app.createSnippet)
-
-	//For serveing static files
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 	//go run cmd/web/* >>/tmp/info.log 2>>/tmp/error.log to dump logs
 
 	//custom http server struct to use custom loggers and addresses
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
 	//Using command line flag for specific port
