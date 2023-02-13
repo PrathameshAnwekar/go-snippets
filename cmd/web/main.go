@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql" // New import
 	"flag"
-
+"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -16,6 +16,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	snippets *mysql.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -31,11 +32,12 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-
+	templateCache , err := newTemplateCache("./ui/html")
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		snippets: &mysql.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	//go run cmd/web/* >>/tmp/info.log 2>>/tmp/error.log to dump logs
