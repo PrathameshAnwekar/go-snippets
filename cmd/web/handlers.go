@@ -19,25 +19,26 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	for _, snippet := range s {
-		fmt.Fprintf(w, "%v\n", snippet)
+	// for _, snippet := range s {
+	// 	fmt.Fprintf(w, "%v\n", snippet)
+	// }
+	data := &templateData{Snippets: s}
+	files := []string{
+		"./ui/html/home.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
 	}
-	// files := []string{
-	// 	"./ui/html/home.page.tmpl",
-	// 	"./ui/html/base.layout.tmpl",
-	// 	"./ui/html/footer.partial.tmpl",
-	// }
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	http.Error(w, "Internal Server Error", 500)
-	// 	return
-	// }
-	// err = ts.Execute(w, nil)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	http.Error(w, "Internal Server Error while executing templates"+err.Error(), 500)
-	// }
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+		http.Error(w, "Internal Server Error while executing templates"+err.Error(), 500)
+	}
 
 }
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +48,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := app.snippets.Get(id)
+	s, err := app.snippets.Latest()
 	if err == models.ErrNoRecord {
 		app.notFound(w)
 		return
@@ -56,7 +57,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateData{Snippet: s}
+	data := &templateData{Snippets: s}
 	files := []string{
 		"./ui/html/show.page.tmpl",
 		"./ui/html/base.layout.tmpl",
